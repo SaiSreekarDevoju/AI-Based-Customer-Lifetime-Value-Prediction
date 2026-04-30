@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLV Prediction System — AI Dashboard</title>
+  <meta name="description" content="AI-powered Customer Lifetime Value prediction and segmentation dashboard built with machine learning." />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── Animated Background Orbs ─────────────────────────── -->
+<div class="bg-orbs" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="shell">
+
+  <!-- ── Header ────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🧠</span>
+      <span>CLV Predictor</span>
+    </div>
+    <div class="header-badge">AI · Powered</div>
+  </header>
+
+  <!-- ── Stats Row ─────────────────────────────────────────── -->
+  <p class="section-title">📊 Overview</p>
+  <div class="stats-grid" id="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-value" id="s-total">—</div>
+      <div class="stat-label">Total Customers</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-value" id="s-avg">—</div>
+      <div class="stat-label">Average CLV</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-value" id="s-high">—</div>
+      <div class="stat-label">High-Value %</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">🚀</div>
+      <div class="stat-value" id="s-max">—</div>
+      <div class="stat-label">Peak CLV</div>
+    </div>
+  </div>
+
+  <!-- ── Predict Section ───────────────────────────────────── -->
+  <p class="section-title">🎯 Predict Customer Lifetime Value</p>
+  <div class="predict-grid">
+
+    <!-- Input Form -->
+    <div class="card form-card">
+      <form id="predict-form" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label" for="age">Age (years)</label>
+            <input class="form-control" type="number" id="age"
+              name="age" min="18" max="100" placeholder="e.g. 34" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="purchase_frequency">Purchase Frequency / yr</label>
+            <input class="form-control" type="number" id="purchase_frequency"
+              name="purchase_frequency" min="1" max="365" placeholder="e.g. 12" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="avg_order_value">Avg Order Value ($)</label>
+            <input class="form-control" type="number" id="avg_order_value"
+              name="avg_order_value" min="1" step="0.01" placeholder="e.g. 120.50" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="recency">Recency (days)</label>
+            <input class="form-control" type="number" id="recency"
+              name="recency" min="0" max="730" placeholder="e.g. 45" required />
+          </div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label" for="tenure">Tenure (months)</label>
+            <input class="form-control" type="number" id="tenure"
+              name="tenure" min="1" max="360" placeholder="e.g. 24" required />
+          </div>
+
+        </div><!-- /form-grid -->
+
+        <button class="btn-predict" type="submit" id="predict-btn">
+          <span class="spinner" id="btn-spinner"></span>
+          <span id="btn-label">⚡ Predict CLV</span>
+        </button>
+      </form>
+    </div><!-- /form-card -->
+
+    <!-- Result Panel -->
+    <div class="card result-card" id="result-panel">
+      <!-- Placeholder (shown before first prediction) -->
+      <div class="result-placeholder" id="result-placeholder">
+        <div class="placeholder-icon">💡</div>
+        <p>Enter customer details on the left<br/>and hit <strong>Predict CLV</strong></p>
+      </div>
+
+      <!-- Actual Result (hidden until prediction) -->
+      <div class="result-content" id="result-content">
+        <p style="color:var(--text-secondary);font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+          Predicted Lifetime Value
+        </p>
+        <div class="clv-amount" id="res-clv">$0</div>
+
+        <div class="segment-badge" id="res-badge">—</div>
+
+        <div class="result-meta">
+          <div class="meta-box">
+            <div class="meta-box-label">Monthly Value</div>
+            <div class="meta-box-value" id="res-monthly">—</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-box-label">Annual Value</div>
+            <div class="meta-box-value" id="res-annual">—</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-box-label">Segment</div>
+            <div class="meta-box-value" id="res-segment">—</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-box-label">Strategy</div>
+            <div class="meta-box-value" id="res-strategy" style="font-size:0.82rem">—</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /result-card -->
+
+  </div><!-- /predict-grid -->
+
+  <!-- ── Table + Chart ─────────────────────────────────────── -->
+  <p class="section-title">📋 Customer Data &amp; Distribution</p>
+  <div class="bottom-grid">
+
+    <!-- Table -->
+    <div class="card table-card">
+      <div class="table-wrapper">
+        <table id="customer-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Age</th>
+              <th>Freq/yr</th>
+              <th>Avg Order</th>
+              <th>Recency</th>
+              <th>Tenure</th>
+              <th>CLV</th>
+              <th>Segment</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Populated by JS -->
+            <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Loading data…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card chart-card">
+      <p style="font-weight:600;margin-bottom:16px;">CLV Distribution by Segment</p>
+      <div class="chart-wrapper">
+        <canvas id="seg-chart"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /bottom-grid -->
+
+</div><!-- /shell -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
