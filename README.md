@@ -128,8 +128,8 @@ From the **project root**:
 uvicorn backend.app:app --reload
 ```
 
-The API will be live at: **http://localhost:8000**
-Interactive API docs: **http://localhost:8000/docs**
+The API will be live at: **Link - For Colaborators Only!**
+Interactive API docs: **Link - For Colaborators Only!**
 
 ---
 
@@ -140,9 +140,9 @@ Open `frontend/index.html` directly in your browser.
 > **Note:** If your browser blocks CORS from `file://`, serve the frontend with Python:
 > ```bash
 > cd frontend
-> python -m http.server 5500
+> python -m Link - For Colaborators Only!
 > ```
-> Then open **http://localhost:5500**
+> Then open **Link - For Colaborators Only!**
 
 ---
 
