@@ -78,6 +78,14 @@ python model/train_model.py
 
 This creates or refreshes the generated files under `data/` and `model/`.
 
+The API expects all three generated artifacts to exist before startup:
+
+- `data/customers.csv`
+- `model/clv_model.pkl`
+- `model/scaler.pkl`
+
+If any artifact is missing, the API reports the missing file during startup and prediction/data endpoints remain unavailable until the artifacts are generated.
+
 ### 3. Start the API
 
 From the repository root:
@@ -111,6 +119,8 @@ Then open `http://localhost:5500`.
 
 ## API reference
 
+All API endpoints use JSON responses. FastAPI's interactive documentation at `/docs` can also be used to inspect the request schema and try endpoints locally.
+
 ### `GET /` — Health check
 
 Returns a small payload confirming that the API is running.
@@ -128,9 +138,24 @@ Returns a small payload confirming that the API is running.
 
 Returns dataset-level statistics used by the dashboard overview.
 
+The response includes:
+
+- Total customer count
+- Average, minimum, and maximum CLV
+- Percentage of High Value customers
+- Counts for Low, Medium, and High Value segments
+- Average CLV for each segment
+- Average customer age
+- Average order value
+- Average customer tenure in months
+
 ### `GET /customers?limit=50&offset=0` — Sample customer records
 
 Returns a paginated slice of the training dataset.
+
+- `limit` controls the number of rows returned.
+- `offset` controls the starting row.
+- The response's `total` field reports the complete dataset size.
 
 Example response shape:
 
@@ -167,7 +192,17 @@ Request body:
 }
 ```
 
-The backend validates the numeric ranges before making a prediction.
+The backend validates the numeric ranges before making a prediction:
+
+| Field | Allowed range |
+|---|---|
+| `age` | 18–100 years |
+| `purchase_frequency` | 1–365 purchases |
+| `avg_order_value` | At least 1 USD |
+| `recency` | 0–730 days |
+| `tenure` | 1–360 months |
+
+If the model or scaler has not loaded, the endpoint returns HTTP 503 instead of attempting a prediction.
 
 Response shape:
 
@@ -226,7 +261,7 @@ Model metrics depend on the generated data and the local training run. Treat the
 | Medium Value | `$1,500 – $6,000` | Nurture, upsell, and loyalty programs |
 | High Value | `> $6,000` | Retention, VIP support, and rewards |
 
-The thresholds are defined in `backend/app.py` and are used by the API response.
+The thresholds are defined in `backend/app.py` and are used by the API response and dataset statistics.
 
 ## Generated artifacts
 
@@ -240,6 +275,8 @@ Do not edit generated `.csv` or `.pkl` files by hand.
 - The model is not a substitute for a production CLV pipeline or financial analysis.
 - The backend currently loads the model, scaler, and dataset during application startup.
 - The example CORS configuration is permissive for local development.
+- The `/customers` endpoint exposes the generated sample dataset and should not be treated as a production customer-data API.
+- The serialized model and scaler are generated locally rather than versioned as a reproducible model artifact pipeline.
 
 ## Future improvements
 
